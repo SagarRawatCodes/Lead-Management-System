@@ -8,16 +8,18 @@ dotenv.config();
 
 const app = express();
 
-// Render provides a PORT environment variable. We must use it.
 const PORT = process.env.PORT || 10000;
 
-// This code reads the FRONTEND_URL from the environment variables you set in the Render dashboard.
+// --- THE DEFINITIVE FIX IS HERE ---
+// We are hardcoding your exact frontend URL to solve the CORS issue.
 const corsOptions = {
-    origin: process.env.FRONTEND_URL,
+    origin: 'https://lead-management-client-cheo.onrender.com',
     optionsSuccessStatus: 200 
 };
 
 app.use(cors(corsOptions));
+// ---------------------------------
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -32,8 +34,6 @@ if (MONGO_URI) {
     mongoose.connect(MONGO_URI)
         .then(() => {
             console.log('Successfully connected to MongoDB Atlas.');
-            // This is the crucial part for Render:
-            // Listen on host 0.0.0.0 and the provided PORT.
             app.listen(PORT, '0.0.0.0', () => {
                 console.log(`Server is running on port: ${PORT}`);
             });
@@ -51,4 +51,5 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
 });
+
 
