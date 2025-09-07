@@ -11,7 +11,7 @@ const app = express();
 // --- THE FIX IS HERE ---
 // We are now hardcoding the exact frontend URL to bypass environment variables.
 const corsOptions = {
-    origin: 'https://lead-management-system-knbn.vercel.app',
+    origin: 'https://lead-management-system-rehp.vercel.app/',
     optionsSuccessStatus: 200 
 };
 
