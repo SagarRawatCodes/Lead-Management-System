@@ -1,67 +1,98 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Sidebar from './components/layout/Sidebar.jsx';
-import Header from './components/layout/Header.jsx';
-import DashboardPage from './components/pages/DashboardPage.jsx';
-import LeadsPage from './components/pages/LeadsPage.jsx';
-import SettingsPage from './components/pages/SettingsPage.jsx';
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
+import DashboardPage from './components/pages/DashboardPage';
+import LeadsPage from './components/pages/LeadsPage';
+import SettingsPage from './components/pages/SettingsPage';
 
-function App() {
-  const [activePage, setActivePage] = useState('dashboard');
-  const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// --- THE FIX IS HERE ---
+// We are now using the live backend URL directly to bypass any environment variable issues.
+const API_BASE_URL = 'https://lead-management-system-khaki.vercel.app//api';
+// --------------------
 
-  const API_URL = 'http://localhost:5000/api/leads';
+const App = () => {
+    const [activePage, setActivePage] = useState('dashboard');
+    const [leads, setLeads] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
     const fetchLeads = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(API_URL);
-        setLeads(response.data);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch leads:", err);
-        setError("Could not connect to the server. Please make sure the backend is running.");
-      } finally {
-        setLoading(false);
-      }
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await axios.get(`${API_BASE_URL}/leads`);
+            setLeads(response.data);
+        } catch (err) {
+            console.error("Failed to fetch leads:", err);
+            setError('Could not connect to the server. Please make sure the backend is running.');
+        } finally {
+            setLoading(false);
+        }
     };
-    fetchLeads();
-  }, []);
 
-  const renderPage = () => {
-    if (loading) {
-        return <div className="flex justify-center items-center h-full"><p className="text-slate-500">Loading data...</p></div>;
-    }
-    if (error) {
-        return <div className="flex justify-center items-center h-full"><p className="text-red-500 bg-red-100 p-4 rounded-lg">{error}</p></div>;
-    }
+    useEffect(() => {
+        fetchLeads();
+    }, []);
 
-    switch (activePage) {
-      case 'leads':
-        return <LeadsPage leads={leads} setLeads={setLeads} apiURL={API_URL} />;
-      case 'dashboard':
-        return <DashboardPage leads={leads} />;
-      case 'LogOut':
-        return <SettingsPage />;
-      default:
-        return <DashboardPage leads={leads} />;
-    }
-  };
+    const handleSaveLead = async (leadData) => {
+        try {
+            if (leadData._id) {
+                // Update existing lead
+                await axios.put(`${API_BASE_URL}/leads/${leadData._id}`, leadData);
+            } else {
+                // Create new lead
+                await axios.post(`${API_BASE_URL}/leads`, leadData);
+            }
+            fetchLeads(); // Refresh data after saving
+        } catch (err) {
+            console.error("Failed to save lead:", err);
+            // You could add a more specific error message here for the user
+        }
+    };
 
-  return (
-    <div className="flex h-screen bg-slate-100 font-sans">
-      <Sidebar activePage={activePage} setActivePage={setActivePage} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-6">
-          {renderPage()}
-        </main>
-      </div>
-    </div>
-  );
-}
+    const handleDeleteLead = async (leadId) => {
+        try {
+            await axios.delete(`${API_BASE_URL}/leads/${leadId}`);
+            fetchLeads(); // Refresh data after deleting
+        } catch (err) {
+            console.error("Failed to delete lead:", err);
+        }
+    };
+
+
+    const renderPage = () => {
+        if (loading) {
+            return <div className="p-8 text-center">Loading data...</div>;
+        }
+        if (error) {
+            return <div className="p-8"><div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div></div>;
+        }
+
+        switch (activePage) {
+            case 'dashboard':
+                return <DashboardPage leads={leads} />;
+            case 'leads':
+                return <LeadsPage leads={leads} onSave={handleSaveLead} onDelete={handleDeleteLead} />;
+            case 'LogOut':
+                return <SettingsPage />;
+            default:
+                return <DashboardPage leads={leads} />;
+        }
+    };
+
+    return (
+        <div className="flex h-screen bg-slate-50 font-sans">
+            <Sidebar activePage={activePage} setActivePage={setActivePage} />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <Header />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50">
+                    {renderPage()}
+                </main>
+            </div>
+        </div>
+    );
+};
 
 export default App;
+
