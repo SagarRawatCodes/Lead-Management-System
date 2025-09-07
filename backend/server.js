@@ -10,23 +10,23 @@ const app = express();
 
 const PORT = process.env.PORT || 10000;
 
-// --- THE DEFINITIVE FIX IS HERE ---
-// We are hardcoding your exact frontend URL to solve the CORS issue.
+// This code reads the FRONTEND_URL from the environment variables you set in the Render dashboard.
 const corsOptions = {
-    origin: 'https://lead-management-client-cheo.onrender.com',
+    origin:"https://lead-management-client-cheo.onrender.com/" ,
     optionsSuccessStatus: 200 
 };
 
 app.use(cors(corsOptions));
-// ---------------------------------
-
 app.use(express.json());
 
 app.get('/', (req, res) => {
     res.send('<h1>Welcome to the Lead Management API</h1><p>Status: Running</p>');
 });
 
-app.use('/api/leads', leadRoutes);
+// --- THE FIX IS HERE ---
+// We've simplified the route from '/api/leads' to just '/leads'
+app.use('/leads', leadRoutes);
+// -----------------------
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -51,5 +51,6 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
 });
+
 
 
