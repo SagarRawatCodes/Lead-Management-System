@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Sidebar from './components/layout/Sidebar';
-import Header from './components/layout/Header';
-import DashboardPage from './components/pages/DashboardPage';
-import LeadsPage from './components/pages/LeadsPage';
-import SettingsPage from './components/pages/SettingsPage';
+import Sidebar from './components/layout/Sidebar.jsx';
+import Header from './components/layout/Header.jsx';
+import DashboardPage from './components/pages/DashboardPage.jsx';
+import LeadsPage from './components/pages/LeadsPage.jsx';
+import SettingsPage from './components/pages/SettingsPage.jsx';
 
-// --- THE FIX IS HERE ---
-// We are now using the live backend URL directly to bypass any environment variable issues.
-const API_BASE_URL = 'https://lead-management-system-khaki.vercel.app//api';
-// --------------------
+// This now correctly reads the API URL from the environment variable you set in Render.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const App = () => {
     const [activePage, setActivePage] = useState('dashboard');
@@ -18,6 +16,13 @@ const App = () => {
     const [error, setError] = useState(null);
 
     const fetchLeads = async () => {
+        // Check if the API_BASE_URL is set
+        if (!API_BASE_URL) {
+            setError("The API URL is not configured. Please check the environment variables.");
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             setError(null);
