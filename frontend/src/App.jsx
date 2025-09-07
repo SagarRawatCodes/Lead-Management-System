@@ -6,8 +6,8 @@ import DashboardPage from './components/pages/DashboardPage.jsx';
 import LeadsPage from './components/pages/LeadsPage.jsx';
 import SettingsPage from './components/pages/SettingsPage.jsx';
 
-// This now correctly reads the API URL from the environment variable you set in Render.
-const API_BASE_URL = process.env.VITE_API_BASE_URL;
+
+const API_BASE_URL = "https://lead-management-api-d4wv.onrender.com/";
 
 const App = () => {
     const [activePage, setActivePage] = useState('dashboard');
